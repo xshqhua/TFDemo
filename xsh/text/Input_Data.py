@@ -1,4 +1,4 @@
-# -*- coding:UTF-8
+# -*- coding:UTF-8 -*- 
 '''
 Created on 2017年5月6日
 
@@ -26,6 +26,8 @@ class Read_Date():
         self.words_dictionary = {}
         self.reverse_dictionary_words = {}
         self._clear_data_read()
+        self.count_train = None
+        self.count_test = None
     def _read_raw_data(self, fileName=None, name=None):
         
         assert fileName != None 
@@ -33,51 +35,64 @@ class Read_Date():
         _data = []
         _label = []
         
-        print(fileName,"start process ...")
+        print(fileName, "start process ...")
         fileReader = codecs.open(fileName, "rb", "utf-8").readlines()
         for i in fileReader:
             i = i.strip()
 
-            labeltep=i[:i.index(':')]
+            labeltep = i[:i.index(':')]
             if labeltep not in self.dictionary_label:
-                self.dictionary_label[labeltep] = len(self.dictionary_label)+1
+                self.dictionary_label[labeltep] = len(self.dictionary_label) + 1
             
-            _label.append(str(self.dictionary_label[labeltep])+"\n")
+            _label.append(str(self.dictionary_label[labeltep]) + "\n")
             
             tep_data = i[i.index(' ') + 1:]
             _data.append(self._clear_data(tep_data))
             
 #         print(_label)     
-        
+        t2data = ""
+        t2label = ""
         if "train_raw.txt" in fileName:
-            train2data = fileName.replace("train_raw.txt","train_data.txt")
-            train2label = fileName.replace("train_raw.txt","train_label.txt")
-            
-            t2d = open(train2data,"w")
-            for line in _data:
-                t2d.writelines(line)
-                t2d.write("\n")
-            t2d.close()
-            
-            open(train2label,"w").writelines(_label)
+            t2data = fileName.replace("train_raw.txt", "train_data.txt")
+            t2label = fileName.replace("train_raw.txt", "train_label.txt")
             
         elif "test_raw.txt" in fileName:
-            test2data = fileName.replace("test_raw.txt","test_data.txt")
-            test2label = fileName.replace("test_raw.txt","test_label.txt")
+            t2data = fileName.replace("test_raw.txt", "test_data.txt")
+            t2label = fileName.replace("test_raw.txt", "test_label.txt")
             
-            t2d = open(test2data,"w")
-            for line in _data:
-                t2d.writelines(line)
-                t2d.write("\n")
-            t2d.close()
-            open(test2label,"w").writelines(_label)
-            print(len(_label))
+        t2d = open(t2data, "w")
+        for line in _data:
+            t2d.writelines(line)
+            t2d.write("\n")
+        t2d.close()
+        
+        
+        label2vec = []
+        label_size = len(self.dictionary_label)
+        for i in _label:
+            __label2vec = ['0']*label_size
+            __label2vec[int(i)-1] = '1'
+            label2vec.append(__label2vec)
+        
+        
+        t2l = open(t2label, "w")
+        for l2v in label2vec:
+#             print(l2v)
+            t2l.writelines(" ".join(l2v))
+            t2l.write("\n")
+        t2l.close()
+#         print(len(_label))
             
-        if name!=None:
+            
+            
+            
+            
+            
+        if name != None:
             self.result_data[name] = [_data, _label]
-            print(name,"\t",fileName,"is successful")
+            print(name, "\t", fileName, "is successful")
         else:
-            print(fileName,"is successful")
+            print(fileName, "is successful")
             
         return [_data, _label]
 
@@ -101,16 +116,16 @@ class Read_Date():
         print("word2vec load successful")
         return id2words
     
-    def _read_pkl(self,filename,name=None):
+    def _read_pkl(self, filename, name=None):
         
         assert name != None
         
-        print(name," start load ...")
+        print(name, " start load ...")
         _fr = open(filename, "rb")
         id2words = pick.load(_fr)
         _fr.close()
         self.result_data[name] = id2words
-        print(name," load successful")
+        print(name, " load successful")
         return id2words
     
     def _clear_data_read(self):
@@ -119,13 +134,13 @@ class Read_Date():
             i = i.strip()
             self.clear_data.add(i)
       
-    def _clear_data(self,line):
+    def _clear_data(self, line):
         tep1 = [w.strip() for w in line.strip().split()]
         tep2 = []
         for w in tep1:
             if w.lower() not in self.clear_data:
                 if w.lower() not in self.words_dictionary:
-                    self.words_dictionary[w.lower()] = len(self.words_dictionary)+1
+                    self.words_dictionary[w.lower()] = len(self.words_dictionary) + 1
 #                 tep2.append(w)
                 tep2.append(str(self.words_dictionary[w.lower()]))
 #         print(tep2)
@@ -137,40 +152,101 @@ class Read_Date():
         train_file = "./corpus/train_raw.txt"
         test_file = "./corpus/test_raw.txt"
         
-        t1 = threading.Thread(target=self._read_raw_data, name="train", args=(train_file,"train",))
-        t2 = threading.Thread(target=self._read_raw_data, name="test", args=(test_file,"test",))
+        t1 = threading.Thread(target=self._read_raw_data, name="train", args=(train_file, "train",))
+        t2 = threading.Thread(target=self._read_raw_data, name="test", args=(test_file, "test",))
         t1.start()
         t2.start()
         t1.join()
         t2.join()
         
-        out_words = open("./data/words.pkl","wb")
-        self.reverse_dictionary_words = {value:key for key,value in self.words_dictionary.items()}
-        pick.dump(self.reverse_dictionary_words,out_words)
+        out_words = open("./data/words.pkl", "wb")
+        self.reverse_dictionary_words = {value:key for key, value in self.words_dictionary.items()}
+        pick.dump(self.reverse_dictionary_words, out_words)
         
-        self.reverse_dictionary_label = {value:key for key,value in self.reverse_dictionary_label.items()}
-        out_category = open("./data/category.pkl","wb")
-        pick.dump(self.reverse_dictionary_label,out_category)
-        print("Consume time ",time.time() - t0)
+        self.reverse_dictionary_label = {value:key for key, value in self.reverse_dictionary_label.items()}
+        out_category = open("./data/category.pkl", "wb")
+        pick.dump(self.reverse_dictionary_label, out_category)
+        print("Consume time ", time.time() - t0)
+    
+    def _read_data(self, filename):
+        _data = []
+#         _label = []
+        fr = open(filename, "r")
+        for w in fr.readlines():
+            _data.append(w.strip())
+        return _data
+    def read_data(self, data_file, label_file, name=None):    
+        assert name != None
+        _data = self._read_data(data_file)
+        _label = self._read_data(label_file)
+        self.result_data[name] = [_data, _label]
+        return [_data, _label]
+    
+    
+    def next_batch(self, batch_size=64, name=None):
+        assert self.count_test != None and self.count_train != None and name != None
         
-
+#         count = 0
+        if name == "train":
+            count = self.count_train
+        elif name == "test":
+            count = self.count_test
+#             print("train")
+#             start = self.count_train * batch_size<len()
+        end = (count + 1) * batch_size - 1
+        if end > len(self.result_data[name][0]):
+            end = len(self.result_data[name][0]) - 1
+        
+        start = count * batch_size
+#             print(start,end,self.count_train)
+        
+        
+        count += 1
+#             print(len(self.result_data[name][1]))
+        count = count % (len(self.result_data[name][1]) // batch_size + 1)
+        __data = self.result_data[name][0][start:end]
+        __label = self.result_data[name][1][start:end]
+        
+        
+        if name == "train":
+            self.count_train = count
+        elif name == "test":
+            self.count_test = count 
+        
+        
+        return [__data, __label]
+        
+    
     def load(self):
         t0 = time.time()
+        self.count_test = 0
+        self.count_train = 0
         t1 = threading.Thread(target=self._read_pkl, name="id2words",
-                              args=("./data/words.pkl","id2words",))
+                              args=("./data/words.pkl", "id2words",))
         t2 = threading.Thread(target=self._read_pkl, name="category",
-                              args=("./data/category.pkl","category",))
+                              args=("./data/category.pkl", "category",))
         t3 = threading.Thread(target=self._read_pkl, name="word2vec",
                               args=("E:\TensorFlow\wordvectors\CH.Gigaword.300B.300d.pk",
                                     "word2vec",))
+        
+        t4 = threading.Thread(target=self.read_data, name="read_data",
+                              args=("./corpus/train_data.txt", "./corpus/train_label.txt", "train",))
+        t5 = threading.Thread(target=self.read_data, name="read_data",
+                              args=("./corpus/test_data.txt", "./corpus/test_label.txt", "test",))
+        
         t1.start()
         t2.start()
         t3.start()
+        t4.start()
+        t5.start()
+        
         t1.join()
         t2.join()
         t3.join()
+        t4.join()
+        t5.join()
         
-        print("Consume time ",(time.time()-t0))
+        print("Consume time ", (time.time() - t0))
 
 
 if __name__ == "__main__":
@@ -182,4 +258,14 @@ if __name__ == "__main__":
     print("start load ...")
     read.load()
     print("load successful")
+#     data = read.next_batch(batch_size=32, name="test")
+#     data = read.next_batch(batch_size=32, name="test")
+#     print(data[0])
+#     print(data[1])
+#     for i in range(5000):
+#         data = read.next_batch(batch_size=8, name="test")
+#         print("*"*30)
+#         print(len(data[0]))
+#         print(data[0])
+#         print(data[1])
 

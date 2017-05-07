@@ -1,34 +1,19 @@
 ''
-
 a
 ?
-
 about
-
 above
-
 across
-
 after
-
 again
-
 against
-
 all
-
 almost
-
 alone
-
 along
-
 already
-
 also
-
 although
-
 always
 
 among
@@ -41,15 +26,12 @@ another
 
 any
 
-anybody
 
-anyone
+
 
 anything
 
-anywhere
 
-are
 
 area
 
@@ -59,13 +41,6 @@ around
 
 as
 
-ask
-
-asked
-
-asking
-
-asks
 
 at
 
@@ -195,13 +170,10 @@ ever
 
 every
 
-everybody
 
-everyone
 
 everything
 
-everywhere
 
 f
 
@@ -213,19 +185,15 @@ fact
 
 facts
 
-far
+
 
 felt
 
 few
 
-find
-
-finds
 
 first
 
-for
 
 four
 
@@ -271,57 +239,14 @@ goods
 
 got
 
-great
-
-greater
-
-greatest
-
-group
-
-grouped
-
-grouping
-
-groups
 
 h
 
-had
 
-has
 
-have
 
-having
 
-he
 
-her
-
-here
-
-herself
-
-high
-
-high
-
-high
-
-higher
-
-highest
-
-him
-
-himself
-
-his
-
-how
-
-however
 
 i
 
@@ -341,7 +266,6 @@ interests
 
 into
 
-is
 
 it
 
@@ -371,9 +295,7 @@ knows
 
 l
 
-large
 
-largely
 
 last
 
@@ -393,31 +315,16 @@ like
 
 likely
 
-long
 
-longer
-
-longest
 
 m
 
-made
 
-make
 
-making
-
-man
-
-many
-
-may
 
 me
 
-member
 
-members
 
 men
 
@@ -433,9 +340,6 @@ mr
 
 mrs
 
-much
-
-must
 
 my
 
@@ -467,7 +371,7 @@ next
 
 no
 
-nobody
+
 
 non
 
@@ -481,9 +385,6 @@ now
 
 nowhere
 
-number
-
-numbers
 
 o
 
@@ -491,13 +392,8 @@ of
 
 off
 
-often
 
-old
 
-older
-
-oldest
 
 on
 
@@ -599,31 +495,17 @@ rooms
 
 s
 
-said
 
 same
 
 saw
 
-say
-
-says
 
 second
 
 seconds
 
-see
 
-seem
-
-seemed
-
-seeming
-
-seems
-
-sees
 
 several
 
@@ -657,13 +539,11 @@ so
 
 some
 
-somebody
 
-someone
 
 something
 
-somewhere
+
 
 state
 
@@ -679,9 +559,6 @@ sure
 
 t
 
-take
-
-taken
 
 than
 
@@ -729,13 +606,12 @@ thus
 
 to
 
-today
+
 
 together
 
 too
 
-took
 
 toward
 
@@ -773,19 +649,10 @@ very
 
 w
 
-want
 
-wanted
 
-wanting
 
-wants
 
-was
-
-way
-
-ways
 
 we
 
@@ -793,29 +660,8 @@ well
 
 wells
 
-went
 
-were
 
-what
-
-when
-
-where
-
-whether
-
-which
-
-while
-
-who
-
-whole
-
-whose
-
-why
 
 will
 
@@ -825,13 +671,7 @@ within
 
 without
 
-work
 
-worked
-
-working
-
-works
 
 would
 
@@ -839,9 +679,7 @@ x
 
 y
 
-year
 
-years
 
 yet
 
