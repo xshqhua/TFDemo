@@ -10,6 +10,8 @@ import numpy as np
 import pickle as pick
 import threading
 import time
+from nltk import app
+from decorator import append
 
 class Read_Date():
 #     def __init__(self):
@@ -168,17 +170,58 @@ class Read_Date():
         pick.dump(self.reverse_dictionary_label, out_category)
         print("Consume time ", time.time() - t0)
     
+    def _read_label(self, filename):
+        _label = []
+#         _label = []
+        fr = open(filename, "r")
+        for w in fr.readlines():
+            _label.append(np.array([int(i) for i in w.strip().split()]))
+        return _label
+    
     def _read_data(self, filename):
         _data = []
 #         _label = []
         fr = open(filename, "r")
         for w in fr.readlines():
-            _data.append(w.strip())
+            _data.append(np.array([int(i) for i in w.strip().split()]))
+#             _data.append(np.array(re))
+            
+        return np.array(_data)
+    
+    
+    def _read_data2(self, filename):
+        _data = []
+#         _label = []
+        fr = open(filename, "r")
+        for w in fr.readlines():
+            ids_ = [i for i in w.strip().split()]
+#             print (ids_)
+            re=[]
+            for j in ids_:
+                j1 = int(j)
+#                 print(self.result_data["id2words"].keys())
+                if j1 in self.result_data["id2words"].keys():
+#                     print("zai")
+                    tep = self.id2Vec(j1) 
+                    if tep!=None:
+                        re.append(tep)
+            print(len(re))
+            _data.append(np.array(re))
+            
         return _data
+    
+    def id2Vec(self,number):
+        key = self.result_data["id2words"][number]
+        if key in self.result_data["word2vec"].keys():
+            return self.result_data["word2vec"][key]
+        
+        print(key)
+        return None    
+    
     def read_data(self, data_file, label_file, name=None):    
         assert name != None
         _data = self._read_data(data_file)
-        _label = self._read_data(label_file)
+        _label = self._read_label(label_file)
         self.result_data[name] = [_data, _label]
         return [_data, _label]
     
@@ -193,12 +236,12 @@ class Read_Date():
             count = self.count_test
 #             print("train")
 #             start = self.count_train * batch_size<len()
-        end = (count + 1) * batch_size - 1
+        end = (count + 1) * batch_size
         if end > len(self.result_data[name][0]):
-            end = len(self.result_data[name][0]) - 1
+            end = len(self.result_data[name][0])
         
         start = count * batch_size
-#             print(start,end,self.count_train)
+        print(start,end,self.count_train)
         
         
         count += 1
@@ -208,13 +251,25 @@ class Read_Date():
         __label = self.result_data[name][1][start:end]
         
         
+        
+        
+        
+        
         if name == "train":
             self.count_train = count
         elif name == "test":
             self.count_test = count 
         
+        __res_data = []
+        for lines in __data:
+            tep_data = []
+            for _id in lines:
+                tt = self.id2Vec(int(_id))
+                if tt!=None:
+                    tep_data.append(np.array(tt))
+            __res_data.append(np.array(tep_data))
         
-        return [__data, __label]
+        return [np.array(__res_data),np.array(__label)]
         
     
     def load(self):
@@ -231,20 +286,20 @@ class Read_Date():
         
         t4 = threading.Thread(target=self.read_data, name="read_data",
                               args=("./corpus/train_data.txt", "./corpus/train_label.txt", "train",))
-        t5 = threading.Thread(target=self.read_data, name="read_data",
-                              args=("./corpus/test_data.txt", "./corpus/test_label.txt", "test",))
+#         t5 = threading.Thread(target=self.read_data, name="read_data",
+#                               args=("./corpus/test_data.txt", "./corpus/test_label.txt", "test",))
         
         t1.start()
         t2.start()
         t3.start()
         t4.start()
-        t5.start()
+#         t5.start()
         
         t1.join()
         t2.join()
         t3.join()
         t4.join()
-        t5.join()
+#         t5.join()
         
         print("Consume time ", (time.time() - t0))
 
@@ -257,6 +312,7 @@ if __name__ == "__main__":
     print("*"*50)
     print("start load ...")
     read.load()
+    print(read.result_data["word2vec"]["names"])
     print("load successful")
 #     data = read.next_batch(batch_size=32, name="test")
 #     data = read.next_batch(batch_size=32, name="test")
@@ -268,4 +324,6 @@ if __name__ == "__main__":
 #         print(len(data[0]))
 #         print(data[0])
 #         print(data[1])
+
+#     print(read.id2Vec(3))
 

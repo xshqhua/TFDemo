@@ -4,9 +4,8 @@ Created on 2017年5月5日
 
 @author: xsh
 '''
+from xsh.text import Input_Data
 import tensorflow as tf
-
-import Input_Data
 
 class parameters():
     def __init__(self):
@@ -17,14 +16,14 @@ class parameters():
                               batch_size=128,
                               display_step=10,
                               
-                              n_input=784,n_classes=10,dropout = 0.75):
+                              n_input_x1=100,n_input_x2=300,n_classes=10,dropout = 0.75):
 
         self.init_train_parameters(learning_rate,
                               training_iters,
                               batch_size,
                               display_step)
         
-        self.init_network_parameters(n_input,n_classes,dropout)
+        self.init_network_parameters(n_input_x1,n_input_x2,n_classes,dropout)
         
     def init_train_parameters(self,
                               learning_rate = 0.001,
@@ -47,7 +46,7 @@ class parameters():
         self.batch_size = batch_size
         self.display_step = display_step
         
-    def init_network_parameters(self,n_input,n_classes,dropout = 0.75):
+    def init_network_parameters(self,n_input_x1,n_input_x2,n_classes,dropout = 0.75):
         """
                     初始化神经网络的输入参数
         Args:
@@ -59,7 +58,8 @@ class parameters():
             None
         """
         # Network Parameters
-        self.n_input = n_input # MNIST data input (img shape: 28*28)
+        self.n_input_x1 = n_input_x1 
+        self.n_input_x2 = n_input_x2 
         self.n_classes = n_classes # MNIST total classes (0-9 digits)
         self.dropout = dropout # Dropout, probability to keep units
         
@@ -71,12 +71,18 @@ parameters.init_parameters(learning_rate = 0.001,
                               training_iters = 20000,
                               batch_size = 128,
                               display_step=10,                              
-                              n_input=784,n_classes=10,dropout = 0.75)
+                              n_input_x1=100,n_input_x2=300,
+                              n_classes=6,dropout = 0.75)
 # tf Graph input
-x = tf.placeholder(tf.float32, [None, parameters.n_input])
+x = tf.placeholder(tf.float32, [None, parameters.n_input_x1,parameters.n_input_x2])
 y = tf.placeholder(tf.float32, [None, parameters.n_classes])
 
 keep_prob = tf.placeholder(tf.float32) #dropout (keep probability)
+
+
+ipt =  Input_Data.Read_Date()
+ipt.load()
+
 
 
 # Create some wrappers for simplicity
@@ -97,19 +103,19 @@ def maxpool2d(x, k=2):
 # Create model
 def conv_net(x, weights, biases, dropout):
     # Reshape input picture
-    print(x.get_shape())
-    
-    x = tf.reshape(x, shape=[-1, 28, 28, 1])
-    
-    print(x.get_shape())
+#     print(x.get_shape())
+#     
+# #     x = tf.reshape(x, shape=[-1, 28, 28, 1])
+#     
+#     print(x.get_shape())
 #     exit(0)
     # Convolution Layer
     conv1 = conv2d(x, weights['wc1'], biases['bc1'])
     # Max Pooling (down-sampling)
     conv1 = maxpool2d(conv1, k=5)
 
-    print(conv1.get_shape())
-    exit()
+#     print(conv1.get_shape())
+#     exit()
 
     # Convolution Layer
     conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
@@ -135,7 +141,7 @@ weights = {
     # 5x5 conv, 32 inputs, 64 outputs
     'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64])),
     # fully connected, 7*7*64 inputs, 1024 outputs
-    'wd1': tf.Variable(tf.random_normal([7*7*64, 1024])),
+    'wd1': tf.Variable(tf.random_normal([25*75*64, 1024])),
     # 1024 inputs, 10 outputs (class prediction)
     'out': tf.Variable(tf.random_normal([1024, parameters.n_classes]))
 }
@@ -167,7 +173,7 @@ with tf.Session() as sess:
     step = 1
     # Keep training until reach max iterations
     while step * parameters.batch_size < parameters.training_iters:
-        batch_x, batch_y = mnist.train.next_batch(parameters.batch_size)
+        batch_x, batch_y = ipt.next_batch(parameters.batch_size,name="train")
         # Run optimization op (backprop)
         sess.run(optimizer, feed_dict={x: batch_x, y: batch_y,
                                        keep_prob: 0.3})
@@ -183,8 +189,8 @@ with tf.Session() as sess:
     print("Optimization Finished!")
 
     # Calculate accuracy for 256 mnist test images
-    print("Testing Accuracy:", \
-        sess.run(accuracy, feed_dict={x: mnist.test.images[:256],
-                                      y: mnist.test.labels[:256],
-                                      keep_prob: 1.}))
+#     print("Testing Accuracy:", \
+#         sess.run(accuracy, feed_dict={x: ipt.test.images[:256],
+#                                       y: mnist.test.labels[:256],
+#                                       keep_prob: 1.}))
     
