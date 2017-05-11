@@ -10,8 +10,10 @@ import numpy as np
 import pickle as pick
 import threading
 import time
-from nltk import app
-from decorator import append
+import nltk 
+from nltk.stem import WordNetLemmatizer 
+from boto.dynamodb2.types import NUMBER
+lemmatizer = WordNetLemmatizer()
 
 class Read_Date():
 #     def __init__(self):
@@ -30,6 +32,7 @@ class Read_Date():
         self._clear_data_read()
         self.count_train = None
         self.count_test = None
+        self.lemmatizer = WordNetLemmatizer()
     def _read_raw_data(self, fileName=None, name=None):
         
         assert fileName != None 
@@ -194,7 +197,7 @@ class Read_Date():
 #         _label = []
         fr = open(filename, "r")
         for w in fr.readlines():
-            ids_ = [i for i in w.strip().split()]
+            ids_ = [i.lower() for i in w.strip().split()]
 #             print (ids_)
             re=[]
             for j in ids_:
@@ -205,17 +208,20 @@ class Read_Date():
                     tep = self.id2Vec(j1) 
                     if tep!=None:
                         re.append(tep)
-            print(len(re))
+#             print(len(re))
             _data.append(np.array(re))
             
         return _data
     
     def id2Vec(self,number):
-        key = self.result_data["id2words"][number]
-        if key in self.result_data["word2vec"].keys():
-            return self.result_data["word2vec"][key]
+#         print(number)
+        keys = self._stem(self.result_data["id2words"][number])
         
-        print(key)
+        for key in keys:
+            if key in self.result_data["word2vec"].keys():
+                return self.result_data["word2vec"][key]
+        
+#         print(keys)
         return None    
     
     def read_data(self, data_file, label_file, name=None):    
@@ -241,7 +247,7 @@ class Read_Date():
             end = len(self.result_data[name][0])
         
         start = count * batch_size
-        print(start,end,self.count_train)
+#         print(start,end,self.count_train)
         
         
         count += 1
@@ -250,11 +256,6 @@ class Read_Date():
         __data = self.result_data[name][0][start:end]
         __label = self.result_data[name][1][start:end]
         
-        
-        
-        
-        
-        
         if name == "train":
             self.count_train = count
         elif name == "test":
@@ -262,15 +263,40 @@ class Read_Date():
         
         __res_data = []
         for lines in __data:
+#             print(lines)
             tep_data = []
             for _id in lines:
                 tt = self.id2Vec(int(_id))
-                if tt!=None:
+                if type(tt)!=None:
                     tep_data.append(np.array(tt))
             __res_data.append(np.array(tep_data))
+            
+#         print(__label)
+        
         
         return [np.array(__res_data),np.array(__label)]
-        
+    def _label2vec(self,number):
+        print(len(self.category))
+        _res = [0]*len(self.category)
+        _res[number-1] = 1
+        return np.array(_res)
+    
+    def _stem(self,word):
+        res = []
+        nlist = ['a','n','v']
+        for i in nlist:
+            w_stem=self.lemmatizer.lemmatize(word,i)
+            if w_stem not in res:
+                res.append(w_stem)
+                
+        word = word.lower()
+        for i in nlist:
+            w_stem=self.lemmatizer.lemmatize(word,i)
+            if w_stem not in res:
+                res.append(w_stem)
+                 
+        return res
+    
     
     def load(self):
         t0 = time.time()
@@ -286,20 +312,20 @@ class Read_Date():
         
         t4 = threading.Thread(target=self.read_data, name="read_data",
                               args=("./corpus/train_data.txt", "./corpus/train_label.txt", "train",))
-#         t5 = threading.Thread(target=self.read_data, name="read_data",
-#                               args=("./corpus/test_data.txt", "./corpus/test_label.txt", "test",))
+        t5 = threading.Thread(target=self.read_data, name="read_data",
+                              args=("./corpus/test_data.txt", "./corpus/test_label.txt", "test",))
         
         t1.start()
         t2.start()
         t3.start()
         t4.start()
-#         t5.start()
+        t5.start()
         
         t1.join()
         t2.join()
         t3.join()
         t4.join()
-#         t5.join()
+        t5.join()
         
         print("Consume time ", (time.time() - t0))
 
@@ -312,18 +338,31 @@ if __name__ == "__main__":
     print("*"*50)
     print("start load ...")
     read.load()
-    print(read.result_data["word2vec"]["names"])
+#     需要将names还原成name也就是原型
+#     print(read.result_data["word2vec"]['what'])
+    
+    print(lemmatizer.lemmatize("names"))
     print("load successful")
 #     data = read.next_batch(batch_size=32, name="test")
 #     data = read.next_batch(batch_size=32, name="test")
 #     print(data[0])
 #     print(data[1])
+    data = read.next_batch(batch_size=8, name="test")
+    print(len(data))
+    print(len(data[0]))
+    print(len(data[0][0]))
+    print(len(data[0][2]))
+    print(len(data[0][2][1]))
+    print(len(data[1]))
+    print(len(data[1][2]))
+    
+    
 #     for i in range(5000):
 #         data = read.next_batch(batch_size=8, name="test")
 #         print("*"*30)
 #         print(len(data[0]))
-#         print(data[0])
-#         print(data[1])
-
+# #         print(data[0])
+# #         print(data[1])
+# 
 #     print(read.id2Vec(3))
 
