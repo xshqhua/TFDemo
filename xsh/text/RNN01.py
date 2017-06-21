@@ -24,69 +24,78 @@ poetry_file = "./corpus/poetry.txt"
 
 
 def read_data(file_path):
-    peotrys = []
+    poetrys = []
     with codecs.open(file_path, "r", "utf-8") as file_read:
         for line in file_read:
-            title, peotry = line.strip().replace("\:", "").split(":")
-            peotry = peotry.replace(" ", "")
-            peotry = peotry.replace("-", "")
-            peotry = peotry.replace("_", "")
-            peotry = peotry.replace("(", "")
-            peotry = peotry.replace(u")", "")
-            peotry = peotry.replace(u"（", "")
-            peotry = peotry.replace(u"）", "")
-            peotry = peotry.replace(u"《", "")
-            peotry = peotry.replace(u"》", "")
-            peotry = peotry.replace(u"【", "")
-            peotry = peotry.replace(u"】", "")
-            peotry = peotry.replace("[", "")
-            peotry = peotry.replace("]", "")
-            peotry = "[" + peotry + "]"
-            peotrys.append(peotry)
-        peotrys = sorted(peotrys, key=lambda line: len(line))
-        print(len(peotrys))
-        return peotrys
+            title, poetry = line.strip().replace("\:", "").split(":")
+            poetry = poetry.replace(" ", "")
+            poetry = poetry.replace("-", "")
+            poetry = poetry.replace("_", "")
+            poetry = poetry.replace("(", "")
+            poetry = poetry.replace(u")", "")
+            poetry = poetry.replace(u"（", "")
+            poetry = poetry.replace(u"）", "")
+            poetry = poetry.replace(u"《", "")
+            poetry = poetry.replace(u"》", "")
+            poetry = poetry.replace(u"【", "")
+            poetry = poetry.replace(u"】", "")
+            poetry = poetry.replace("[", "")
+            poetry = poetry.replace("]", "")
+            # poetry = "[" + poetry + "]"
+            if poetry != "":
+                poetrys.append(poetry)
+        poetrys = sorted(poetrys, key=lambda line: len(line))
+        print(len(poetrys))
+        return poetrys
 
 
 def init():
-    peotrys = read_data(poetry_file)
+    poetrys = read_data(poetry_file)
     all_words = []
     i = 0
-    for peotry in peotrys:
-        all_words += [word for word in peotry]
+    for poetry in poetrys:
+        all_words += [word for word in poetry]
         # if len(all_words)>100*i:
         #     print(all_words)
         #     i+=1
     counter = collections.Counter(all_words)
     # 统计单词的个数
-    print(counter)
+    # print(counter)
     # 将单词进行逆序排序
     count_pair = sorted(counter.items(), key=lambda x: -x[1])
-    print(count_pair)
+    # print(count_pair)
     # 过滤部分非单词的词
     count_pair = count_pair[4:]
-    print(count_pair[4:])
+    # print(count_pair[4:])
     # 选取一部分单词作为有用的信息
     words, _ = zip(*count_pair)
-    print(words)
-    print(len(words))
+    # print(words)
+    # print(len(words))
     words = words[:len(words)] + (" ",)
-    print(words)
-    print(len(words))
+    # print(words)
+    # print(len(words))
     # 将单词进行ID标识
     words_2_number = dict(zip(words, range(len(words))))
-    print(words_2_number)
+    # print(words_2_number)
     # 将单词进行ID标识，逆序
     words_2_number_dev = dict(zip(words_2_number.values(), words_2_number.keys()))
-    print(words_2_number_dev)
+    # print(words_2_number_dev)
     # 定义一个匿名函数
     to_num = lambda word: [words_2_number.get(w, len(words)) for w in word]
     # print(to_num)
-    peotrys_vector = [list(map(to_num, peotry)) for peotry in peotrys]
-    # print(peotrys_vector[0])
-    for i in peotrys_vector:
-        print(i)
-        time.sleep(0.1)
+    poetrys_vector = [str(list(map(to_num, poetry))) for poetry in poetrys]
+    # print(poetrys_vector[0])
+    # print(poetrys_vector[1])
+    # print(poetrys_vector[2])
+    # print(type(poetrys_vector))
+    # print(type(poetrys_vector[0]))
+    # print(type(poetrys_vector[0][0]))
+    poetrys_vector = [[int(int_str.replace("]", "").replace("[", "")) for int_str in poetry.split(",")] for poetry in
+                      poetrys_vector]
+    for i in poetrys_vector:
+        print(len(i))
+        # print(type(i[0]))
+        # time.sleep(0.1)
     pass
 
 
