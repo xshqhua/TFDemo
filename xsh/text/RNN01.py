@@ -103,25 +103,27 @@ def init():
 	n_chunk = len(poetrys_vector)
 	x_batchs = []
 	y_batchs = []
-	for i in range(n_chunk):
-		start_index = i * batch_size
-		end_index = start_index + batch_size
-		batchs = poetrys_vector[start_index:end_index]
-		length = max(map(len, batchs))
-		# np.fu
-		# print(words_2_number[" "])
-		# print(type(words_2_number[" "]))
-		# print ((batch_size,length))
-		x_data = np.full((batch_size, length), words_2_number[" "],np.int32)
-		for row in range(batch_size):
+	start_index = i * batch_size
+	end_index = start_index + batch_size
+	batchs = poetrys_vector[start_index:end_index]
+	length = max(map(len, batchs))
+	# np.fu
+	# print(words_2_number[" "])
+	# print(type(words_2_number[" "]))
+	# print ((batch_size,length))
+	x_data = np.full((batch_size, length), words_2_number[" "], np.int32)
+	for row in range(batch_size):
+		# print("row=", row)
+		# print("len(batchs)=", len(batchs))
+		# print("len(x_data)=", len(x_data))
+		if row < len(batchs):
 			x_data[row, :len(batchs[row])] = batchs[row]
-		y_data = np.copy(x_data)
-		# print(x_data)
-		y_data[:, :-1] = x_data[:, 1:]
-		# print("y_data")
-		# print(y_data)
-		x_batchs.append(x_data)
-		y_batchs.append(y_data)
+	y_data = np.copy(x_data)
+	print("x_data=", x_data)
+	y_data[:, :-1] = x_data[:, 1:]
+	print("y_data=", y_data)
+	x_batchs.append(x_data)
+	y_batchs.append(y_data)
 	pass
 
 
