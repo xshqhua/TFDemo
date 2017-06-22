@@ -23,7 +23,9 @@ import time
 sess = tf.Session()
 
 poetry_file = "./corpus/poetry.txt"
-batch_size = 3
+batch_size = 64
+words_size = 50000
+input_data = tf.placeholder(dtype=tf.int32, shape=[batch_size, None])
 
 
 def read_data(file_path):
@@ -74,7 +76,7 @@ def init():
     words, _ = zip(*count_pair)
     # print(words)
     # print(len(words))
-    words = words[:len(words)] + (" ",)
+    words = words[:words_size] + (" ",)
     # print(words)
     # print(len(words))
     # 将单词进行id标识
@@ -128,15 +130,32 @@ def init():
 
     pass
 
-def neural_network(model="lstm",rnn_size=128,num_layer=2):
-    if model=="rnn":
+
+def neural_network(model="lstm", rnn_size=128, num_layer=2):
+    if model == "rnn":
         cell_fun = rnn.BasicRNNCell
-    elif model=="gru":
+    elif model == "gru":
         cell_fun = rnn.GRUCell
-    elif model=="lstm":
-        cell_fun=rnn.LSTMCell
+    elif model == "lstm":
+        cell_fun = rnn.LSTMCell
 
+    cell = cell_fun(rnn_size, state_is_tuple=True)
+    cell = rnn.MultiRNNCell([cell] * num_layer, state_is_tuple=True)
 
+    init_state = cell.zero_state(batch_size=batch_size, dtype=tf.float32)
+
+    with tf.variable_scope("rnnlm"):
+        softmax_w = tf.get_variable("softmax_w", [rnn_size, words_size + 1])
+        softmax_b = tf.get_variable("softmax_b", [words_size + 1])
+        with tf.device("/cpu:0"):
+            embeding = tf.get_variable("embeding", [words_size + 1, rnn_size])
+            input = tf.nn.embedding_lookup(embeding, input_data)
+    outputs, last_state = tf.nn.dynamic_rnn(cell, input, initial_state=init_state, scope="rnnlm")
+    output = tf.reshape(outputs, [-1, rnn_size])
+
+    logits = tf.matmul(output, softmax_w) + softmax_b
+    probs = tf.nn.softmax(logits)
+    return logits, last_state, probs, cell, init_state
 
 
 class main():
@@ -145,7 +164,7 @@ class main():
 
 
 if __name__ == "__main__":
-    # init()
-    neural_network()
+    init()
+    neural_network(model="rnn")
     print("TT")
     pass
