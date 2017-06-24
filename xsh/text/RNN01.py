@@ -10,13 +10,12 @@
 @file: rnn01.py
 @time: 2017/6/20 12:55
 """
-import tensorflow as tf
-from tensorflow.contrib import rnn
 import codecs
 import collections
+
 import numpy as np
-import sys
-import time
+import tensorflow as tf
+from tensorflow.contrib import rnn
 
 # sys.setdefaultencoding("utf8")
 # rel
@@ -63,7 +62,7 @@ def init():
     # if len(all_words)>100*i:
     #     print(all_words)
     #     i+=1
-    counter = collections.counter(all_words)
+    counter = collections.Counter(all_words)
     # 统计单词的个数
     # print(counter)
     # 将单词进行逆序排序
@@ -122,9 +121,9 @@ def init():
         if row < len(batchs):
             x_data[row, :len(batchs[row])] = batchs[row]
     y_data = np.copy(x_data)
-    print("x_data=", x_data)
+    # print("x_data=", x_data)
     y_data[:, :-1] = x_data[:, 1:]
-    print("y_data=", y_data)
+    # print("y_data=", y_data)
     x_batchs.append(x_data)
     y_batchs.append(y_data)
 
@@ -139,23 +138,31 @@ def neural_network(model="lstm", rnn_size=128, num_layer=2):
     elif model == "lstm":
         cell_fun = rnn.LSTMCell
 
-    cell = cell_fun(rnn_size, state_is_tuple=True)
-    cell = rnn.MultiRNNCell([cell] * num_layer, state_is_tuple=True)
+    cell = cell_fun(num_units=rnn_size, state_is_tuple=True)
+    # cell = rnn.MultiRNNCell(cells=[cell for _ in range(num_layer)], state_is_tuple=True)
+    cell = rnn.MultiRNNCell(cells=[cell] * num_layer, state_is_tuple=True)
 
     init_state = cell.zero_state(batch_size=batch_size, dtype=tf.float32)
 
-    with tf.variable_scope("rnnlm"):
+    with tf.variable_scope("rnnlstm"):
         softmax_w = tf.get_variable("softmax_w", [rnn_size, words_size + 1])
         softmax_b = tf.get_variable("softmax_b", [words_size + 1])
         with tf.device("/cpu:0"):
             embeding = tf.get_variable("embeding", [words_size + 1, rnn_size])
             input = tf.nn.embedding_lookup(embeding, input_data)
-    outputs, last_state = tf.nn.dynamic_rnn(cell, input, initial_state=init_state, scope="rnnlm")
+
+    outputs, last_state = tf.nn.dynamic_rnn(cell=cell, inputs=input, initial_state=init_state, scope="rnnlstm")
     output = tf.reshape(outputs, [-1, rnn_size])
 
-    logits = tf.matmul(output, softmax_w) + softmax_b
+    logits = tf.add(tf.matmul(output, softmax_w), softmax_b)
     probs = tf.nn.softmax(logits)
-    return logits, last_state, probs, cell, init_state
+    # return logits, last_state, probs, cell, init_state
+
+
+def train_neural_network():
+    # logits, last_state, _, _, _ = neural_network()
+    neural_network()
+    pass
 
 
 class main():
@@ -164,7 +171,9 @@ class main():
 
 
 if __name__ == "__main__":
-    init()
-    neural_network(model="rnn")
+    # init()
+    # neural_network(model="rnn")
+    # train_neural_network()
+    neural_network()
     print("TT")
     pass

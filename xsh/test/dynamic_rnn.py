@@ -23,6 +23,7 @@ class ToySequenceData(object):
     dimensions). The dynamic calculation will then be perform thanks to
     'seqlen' attribute that records every actual sequence length.
     """
+
     def __init__(self, n_samples=1000, max_seq_len=20, min_seq_len=3,
                  max_value=1000):
         self.data = []
@@ -37,7 +38,7 @@ class ToySequenceData(object):
             if random.random() < .5:
                 # Generate a linear sequence
                 rand_start = random.randint(0, max_value - len)
-                s = [[float(i)/max_value] for i in
+                s = [[float(i) / max_value] for i in
                      range(rand_start, rand_start + len)]
                 # Pad sequence for dimension consistency
                 s += [[0.] for i in range(max_seq_len - len)]
@@ -45,7 +46,7 @@ class ToySequenceData(object):
                 self.labels.append([1., 0.])
             else:
                 # Generate a random sequence
-                s = [[float(random.randint(0, max_value))/max_value]
+                s = [[float(random.randint(0, max_value)) / max_value]
                      for i in range(len)]
                 # Pad sequence for dimension consistency
                 s += [[0.] for i in range(max_seq_len - len)]
@@ -61,9 +62,9 @@ class ToySequenceData(object):
         batch_data = (self.data[self.batch_id:min(self.batch_id +
                                                   batch_size, len(self.data))])
         batch_labels = (self.labels[self.batch_id:min(self.batch_id +
-                                                  batch_size, len(self.data))])
+                                                      batch_size, len(self.data))])
         batch_seqlen = (self.seqlen[self.batch_id:min(self.batch_id +
-                                                  batch_size, len(self.data))])
+                                                      batch_size, len(self.data))])
         self.batch_id = min(self.batch_id + batch_size, len(self.data))
         return batch_data, batch_labels, batch_seqlen
 
@@ -79,9 +80,9 @@ batch_size = 128
 display_step = 10
 
 # Network Parameters
-seq_max_len = 20 # Sequence max length
-n_hidden = 64 # hidden layer num of features
-n_classes = 2 # linear sequence or not
+seq_max_len = 20  # Sequence max length
+n_hidden = 64  # hidden layer num of features
+n_classes = 2  # linear sequence or not
 
 trainset = ToySequenceData(n_samples=1000, max_seq_len=seq_max_len)
 testset = ToySequenceData(n_samples=500, max_seq_len=seq_max_len)
@@ -102,11 +103,10 @@ biases = {
 
 
 def dynamicRNN(x, seqlen, weights, biases):
-
     # Prepare data shape to match `rnn` function requirements
     # Current data input shape: (batch_size, n_steps, n_input)
     # Required shape: 'n_steps' tensors list of shape (batch_size, n_input)
-    
+
     # Unstack to get a list of 'n_steps' tensors of shape (batch_size, n_input)
     x = tf.unstack(x, seq_max_len, 1)
 
@@ -116,7 +116,7 @@ def dynamicRNN(x, seqlen, weights, biases):
     # Get lstm cell output, providing 'sequence_length' will perform dynamic
     # calculation.
     outputs, states = tf.contrib.rnn.static_rnn(lstm_cell, x, dtype=tf.float32,
-                                sequence_length=seqlen)
+                                                sequence_length=seqlen)
 
     # When performing dynamic calculation, we must retrieve the last
     # dynamically computed output, i.e., if a sequence length is 10, we need
@@ -140,6 +140,7 @@ def dynamicRNN(x, seqlen, weights, biases):
     # Linear activation, using outputs computed above
     return tf.matmul(outputs, weights['out']) + biases['out']
 
+
 pred = dynamicRNN(x, seqlen, weights, biases)
 
 # Define loss and optimizer
@@ -147,7 +148,7 @@ cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, label
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
 # Evaluate model
-correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
+correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
 # Initializing the variables
@@ -170,7 +171,7 @@ with tf.Session() as sess:
             # Calculate batch loss
             loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y,
                                              seqlen: batch_seqlen})
-            print("Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
+            print("Iter " + str(step * batch_size) + ", Minibatch Loss= " + \
                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
         step += 1
@@ -181,5 +182,5 @@ with tf.Session() as sess:
     test_label = testset.labels
     test_seqlen = testset.seqlen
     print("Testing Accuracy:", \
-        sess.run(accuracy, feed_dict={x: test_data, y: test_label,
-                                      seqlen: test_seqlen}))
+          sess.run(accuracy, feed_dict={x: test_data, y: test_label,
+                                        seqlen: test_seqlen}))
