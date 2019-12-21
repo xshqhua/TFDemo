@@ -1,14 +1,14 @@
 #!/usr/bin/env python  
 # -*- coding=utf-8 -*-
 """
-@version: v1.0 
-@author: xsh
-@license: xshqhua
-@contact: xshqhua@foxmail.com
-@site:
-@software: pycharm
-@file: rnn01.py
-@time: 2017/6/20 12:55
+  @version: v1.0
+  @author: poetry
+  @license: xshqhua
+  @contact: xshqhua@foxmail.com
+  @site:
+  @software: pycharm
+  @file: rnn01.py
+  @time: 2017/6/20 12:55
 """
 import codecs
 import collections
@@ -21,7 +21,7 @@ from tensorflow.contrib import rnn
 # rel
 sess = tf.Session()
 
-poetry_file = "./corpus/poetry.txt"
+poetry_file = "../corpus/poetry.txt"
 batch_size = 64
 words_size = 50000
 input_data = tf.placeholder(dtype=tf.int32, shape=[batch_size, None])
