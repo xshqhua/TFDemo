@@ -11,7 +11,7 @@
     @time: 2019/12/21 23:14
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='TFDemo',
@@ -22,12 +22,12 @@ setup(
     license='open sources',
     description='just a study',
     # packages=["mrcnn"],  # setup.py同级目录下文件夹mrcnn中含有__init__.py文件
-    # install_requires=install_reqs,
+    install_requires=['numpy', 'tensorflow'],
     include_package_data=True,
     python_requires='>=3.7',
     long_description="just a study",
     classifiers=[
         "xx"
     ],
-    keywords=["xx", ]
+    keywords=["xx", ],
 )

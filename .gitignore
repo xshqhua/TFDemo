@@ -4,3 +4,4 @@
 */.pytest_cache
 TFDemo.egg-info
 dist/
+**/checkpoints
