@@ -1,7 +1,7 @@
 #!/usr/bin python  
 # -*- coding=utf-8 -*-
 """
-    just study demo
+    just test demo
     @version: v1.0 
     @author: xsh
     @license: open

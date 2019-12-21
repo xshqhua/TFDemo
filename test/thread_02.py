@@ -1,7 +1,7 @@
 # -*- encoding=utf-8 -*-  
 """
 Created on 2017年5月6日
-@author: poetry
+@author: xsh
 """
 
 import threading
