@@ -3,3 +3,5 @@
 **/__pycache__
 .pydevproject
 !/*/.pytest_cache/
+TFDemo.egg-info/
+dist/
