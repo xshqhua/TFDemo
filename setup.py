@@ -22,7 +22,7 @@ setup(
     license='open sources',
     description='just a study',
     # packages=["mrcnn"],  # setup.py同级目录下文件夹mrcnn中含有__init__.py文件
-    install_requires=['numpy', 'tensorflow'],
+    install_requires=['numpy', 'tensorflow', 'pygame', 'gym'],
     include_package_data=True,
     python_requires='>=3.7',
     long_description="just a study",
