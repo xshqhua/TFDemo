@@ -14,14 +14,16 @@ import os
 
 import numpy as np
 import tensorflow as tf
-
+from datetime import datetime
 from poetry.model import rnn_model
 from poetry.poems import process_poems, generate_batch
-
 from util_root_path import poetry_demo_root_path, osp
 
 tf.app.flags.DEFINE_integer('batch_size', 64, 'batch size.')
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning rate.')
+
+tf.app.flags.DEFINE_integer('rnn_size', 128, 'rnn size.')
+tf.app.flags.DEFINE_integer('num_layers', 4, 'num layers.')
 
 # set this to 'main.py' relative path
 tf.app.flags.DEFINE_string('checkpoints_dir', osp.join(poetry_demo_root_path, 'checkpoints/'), 'checkpoints save path.')
@@ -29,7 +31,7 @@ tf.app.flags.DEFINE_string('file_path', osp.join(poetry_demo_root_path, 'corpus'
 
 tf.app.flags.DEFINE_string('model_prefix', 'poems', 'model save prefix.')
 
-tf.app.flags.DEFINE_integer('epochs', 50, 'train how many epochs.')
+tf.app.flags.DEFINE_integer('epochs', 100, 'train how many epochs.')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -51,7 +53,8 @@ def run_training():
     output_targets = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
 
     end_points = rnn_model(model='lstm', input_data=input_data, output_data=output_targets, vocab_size=len(
-        vocabularies), rnn_size=128, num_layers=2, batch_size=FLAGS.batch_size, learning_rate=FLAGS.learning_rate)
+        vocabularies), rnn_size=FLAGS.rnn_size, num_layers=FLAGS.num_layers, batch_size=FLAGS.batch_size,
+                           learning_rate=FLAGS.learning_rate)
 
     saver = tf.train.Saver(tf.global_variables())
     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -68,19 +71,31 @@ def run_training():
             start_epoch += int(checkpoint.split('-')[-1])
         print('[INFO] start training...')
         try:
+            train_start = datetime.now()
             for epoch in range(start_epoch, FLAGS.epochs):
+                epoch_start = datetime.now()
                 n = 0
                 n_chunk = len(poems_vector) // FLAGS.batch_size
+                n_batch_start = datetime.now()
                 for batch in range(n_chunk):
                     loss, _, _ = sess.run([
                         end_points['total_loss'],
                         end_points['last_state'],
                         end_points['train_op']
                     ], feed_dict={input_data: batches_inputs[n], output_targets: batches_outputs[n]})
+
+                    if n % 100 == 0:
+                        n_batch_end = datetime.now()
+                        print('[INFO] Epoch: %d , cost time: %s , batch: %d , training loss: %.6f' % (
+                            epoch, n_batch_end - n_batch_start, batch, loss))
+                        n_batch_start = datetime.now()
                     n += 1
-                    print('[INFO] Epoch: %d , batch: %d , training loss: %.6f' % (epoch, batch, loss))
-                if epoch % 6 == 0:
+                if epoch % 1 == 0:
                     saver.save(sess, os.path.join(FLAGS.checkpoints_dir, FLAGS.model_prefix), global_step=epoch)
+                epoch_end = datetime.now()
+                print('[INFO] Epoch: %d , training cost time : %s' % (epoch, epoch_end - epoch_start))
+            train_end = datetime.now()
+            print('[INFO] Training cost time : %s' % (epoch, train_end - train_start))
         except KeyboardInterrupt:
             print('[INFO] Interrupt manually, try saving checkpoint for now...')
             saver.save(sess, os.path.join(FLAGS.checkpoints_dir, FLAGS.model_prefix), global_step=epoch)
@@ -105,7 +120,8 @@ def gen_poem(begin_word):
     input_data = tf.placeholder(tf.int32, [batch_size, None])
 
     end_points = rnn_model(model='lstm', input_data=input_data, output_data=None, vocab_size=len(
-        vocabularies), rnn_size=128, num_layers=2, batch_size=64, learning_rate=FLAGS.learning_rate)
+        vocabularies), rnn_size=FLAGS.rnn_size, num_layers=FLAGS.num_layers, batch_size=FLAGS.batch_size,
+                           learning_rate=FLAGS.learning_rate)
 
     saver = tf.train.Saver(tf.global_variables())
     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -131,6 +147,7 @@ def gen_poem(begin_word):
             [predict, last_state] = sess.run([end_points['prediction'], end_points['last_state']],
                                              feed_dict={input_data: x, end_points['initial_state']: last_state})
             word = to_word(predict, vocabularies)
+            # print(word)
         # word = words[np.argmax(probs_)]
         return poem
 
@@ -144,7 +161,7 @@ def pretty_print_poem(poem):
             print(s + '。')
 
 
-def main(is_train):
+def _main(is_train):
     if is_train:
         print('[INFO] train tang poem...')
         run_training()
@@ -156,5 +173,12 @@ def main(is_train):
         pretty_print_poem(poem2)
 
 
+def main(is_train):
+    if isinstance(is_train, list):
+        _main(is_train[0])
+    else:
+        _main(is_train)
+
+
 if __name__ == '__main__':
-    tf.app.run()
+    tf.app.run(argv=[False])
