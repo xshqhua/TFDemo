@@ -10,7 +10,7 @@
     @file: gym_01_pong_v0.py
     @time: 2019/12/22 20:48
 """
-import time;
+import time
 ticks = time.time()
 localtime = time.localtime(ticks)
 asctime = time.asctime( time.localtime(time.time()) )
@@ -43,3 +43,13 @@ printme("再次调用同一函数")
 import math
 content = dir(math)
 print(content)
+
+
+class Test:
+   def prt(runoob):
+      print(runoob)
+      print(runoob.__class__)
+
+
+t = Test()
+t.prt()
