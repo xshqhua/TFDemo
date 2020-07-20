@@ -21,7 +21,7 @@ setup(
     author_email='xshqhua@gmail.com',
     license='open sources',
     description='just a study',
-    packages=["gobang", "poetry", "test"],
+    packages=["gobang", "poetry", "test_code"],
     install_requires=['numpy', 'tensorflow', 'pygame', 'gym'],
     include_package_data=True,
     python_requires='>=3.7',

@@ -53,3 +53,19 @@ class Test:
 
 t = Test()
 t.prt()
+
+from collections import Counter
+
+
+def fun():
+    n = int(input())
+    world_list = []
+    for i in range(n):
+        world_list.append(input())
+    m = int(input())
+    world_counts = Counter(world_list)
+    top_m = world_counts.most_common(m)
+    top_by_sort = sorted(top_m, key=lambda r: (r[1], -int(ord(r[0][0]))), reverse=True)
+    for j in top_by_sort:
+        print(j[0])
+fun()
